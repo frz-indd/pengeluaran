@@ -5,6 +5,7 @@ class Expense {
   final String category;
   final DateTime date;
   final String? description;
+  final String? imagePath; // 🔥 TAMBAHAN
 
   Expense({
     this.id,
@@ -13,6 +14,7 @@ class Expense {
     required this.category,
     required this.date,
     this.description,
+    this.imagePath, // 🔥 TAMBAHAN
   });
 
   // Convert Expense to Map for database
@@ -24,6 +26,7 @@ class Expense {
       'category': category,
       'date': date.toIso8601String(),
       'description': description,
+      'imagePath': imagePath, // 🔥 TAMBAHAN
     };
   }
 
@@ -36,6 +39,7 @@ class Expense {
       category: map['category'],
       date: DateTime.parse(map['date']),
       description: map['description'],
+      imagePath: map['imagePath'], // 🔥 TAMBAHAN
     );
   }
 
@@ -47,6 +51,7 @@ class Expense {
     String? category,
     DateTime? date,
     String? description,
+    String? imagePath, // 🔥 TAMBAHAN
   }) {
     return Expense(
       id: id ?? this.id,
@@ -55,6 +60,7 @@ class Expense {
       category: category ?? this.category,
       date: date ?? this.date,
       description: description ?? this.description,
+      imagePath: imagePath ?? this.imagePath, // 🔥 TAMBAHAN
     );
   }
 }

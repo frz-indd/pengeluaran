@@ -1,9 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../models/expense.dart';
 import '../models/category.dart';
 import '../providers/expense_provider.dart';
+import '../services/receipt_image_service.dart';
+import '../widgets/image_preview_dialog.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final Expense? expenseToEdit;
@@ -21,6 +26,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   late DateTime _selectedDate;
   late String _selectedCategory;
 
+  // 🔥 TAMBAHAN FOTO
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+  final ReceiptImageService _receiptImageService = const ReceiptImageService();
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +46,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       );
       _selectedDate = widget.expenseToEdit!.date;
       _selectedCategory = widget.expenseToEdit!.category;
+
+      // 🔥 load gambar lama kalau ada
+      if (widget.expenseToEdit!.imagePath != null) {
+        _selectedImage = File(widget.expenseToEdit!.imagePath!);
+      }
     } else {
       _titleController = TextEditingController();
       _amountController = TextEditingController();
@@ -51,6 +66,21 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     _amountController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  // 🔥 FUNCTION AMBIL GAMBAR
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      final compressed = await _receiptImageService.compressAndPersist(
+        sourcePath: pickedFile.path,
+        targetReductionFactor: 10,
+      );
+      setState(() {
+        _selectedImage = compressed;
+      });
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -82,6 +112,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       category: _selectedCategory,
       date: _selectedDate,
       description: _descriptionController.text,
+      imagePath: _selectedImage?.path, // 🔥 simpan foto
     );
 
     final provider = context.read<ExpenseProvider>();
@@ -149,6 +180,74 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             ),
             const SizedBox(height: 16),
 
+            // 🔥 FOTO
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Foto Bukti',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 12),
+
+                    _selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: InkWell(
+                              onTap: () {
+                                final path = _selectedImage?.path;
+                                if (path == null) return;
+                                showImagePreviewDialog(
+                                  context,
+                                  imagePath: path,
+                                  title: 'Foto Bukti',
+                                );
+                              },
+                              child: Image.file(
+                                _selectedImage!,
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            height: 150,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text('Belum ada foto'),
+                          ),
+
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => _pickImage(ImageSource.camera),
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Kamera'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _pickImage(ImageSource.gallery),
+                          icon: const Icon(Icons.photo),
+                          label: const Text('Galeri'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // Category Selection
             Card(
               child: Padding(
@@ -173,16 +272,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               _selectedCategory = category.name;
                             });
                           },
-                          avatar: Text(
-                            category.emoji,
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                          avatar: Text(category.emoji),
                           label: Text(category.name),
-                          backgroundColor: category.color.withOpacity(0.2),
+                          backgroundColor: category.color.withAlpha(51),
                           selectedColor: category.color,
                           labelStyle: TextStyle(
                             color: isSelected ? Colors.white : null,
-                            fontWeight: FontWeight.bold,
                           ),
                         );
                       }).toList(),
@@ -191,93 +286,37 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ),
               ),
             ),
+
             const SizedBox(height: 16),
 
-            // Date Selection
+            // Date
             Card(
               child: ListTile(
-                leading: const Text('📅', style: TextStyle(fontSize: 20)),
+                leading: const Text('📅'),
                 title: Text(dateFormat.format(_selectedDate)),
-                trailing: const Text('✎', style: TextStyle(fontSize: 20)),
+                trailing: const Text('✎'),
                 onTap: () => _selectDate(context),
               ),
             ),
+
             const SizedBox(height: 16),
 
-            // Description Field
+            // Description
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(
-                labelText: 'Keterangan (opsional)',
-                prefixText: '📝 ',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                labelText: 'Keterangan',
+                border: OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
+
             const SizedBox(height: 24),
 
-            // Save Button
             ElevatedButton(
               onPressed: _saveExpense,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                '✓ ' + (widget.expenseToEdit != null ? 'Perbarui' : 'Simpan'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text(widget.expenseToEdit != null ? 'Perbarui' : 'Simpan'),
             ),
-
-            if (widget.expenseToEdit != null) ...[
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Hapus Pengeluaran?'),
-                      content: const Text(
-                        'Apakah Anda yakin ingin menghapus pengeluaran ini?',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Batal'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            context.read<ExpenseProvider>().deleteExpense(
-                              widget.expenseToEdit!.id!,
-                            );
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Pengeluaran dihapus'),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Hapus',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text(
-                  '🗑️ Hapus',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
           ],
         ),
       ),

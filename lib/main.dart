@@ -3,8 +3,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/expense_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notification service
+  await NotificationService().initialize();
+  await NotificationService().setDailyReminderAt8AM();
+
   runApp(const MyApp());
 }
 
@@ -16,7 +23,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => ExpenseProvider())],
       child: MaterialApp(
-        title: 'Pengeluaran Bulanan',
+        debugShowCheckedModeBanner: false, // 🔥 ini buat hilangin DEBUG
+        title: 'My Outcome',
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,

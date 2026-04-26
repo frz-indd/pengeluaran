@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/category.dart';
 import '../models/expense.dart';
 import '../providers/expense_provider.dart';
 import 'add_expense_screen.dart';
+import '../widgets/image_preview_dialog.dart';
 
 class ExpenseListScreen extends StatefulWidget {
   final ExpenseProvider provider;
@@ -63,7 +66,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     label: Text(category.name),
-                    backgroundColor: category.color.withOpacity(0.2),
+                    backgroundColor: category.color.withAlpha(51),
                     onSelected: (_) {
                       setState(() {
                         _filterCategory = category.name;
@@ -110,7 +113,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: category.color.withOpacity(0.2),
+                            color: category.color.withAlpha(51),
                             shape: BoxShape.circle,
                           ),
                           child: Center(
@@ -158,13 +161,51 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                             ],
                           ],
                         ),
-                        trailing: Text(
-                          currencyFormat.format(expense.amount),
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              currencyFormat.format(expense.amount),
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
+                            ),
+                            if (expense.imagePath != null &&
+                                expense.imagePath!.isNotEmpty) ...[
+                              const SizedBox(width: 10),
+                              InkWell(
+                                onTap: () => showImagePreviewDialog(
+                                  context,
+                                  imagePath: expense.imagePath!,
+                                  title: expense.title,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    File(expense.imagePath!),
+                                    width: 44,
+                                    height: 44,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 44,
+                                        height: 44,
+                                        color: Colors.grey.shade200,
+                                        alignment: Alignment.center,
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
+                            ],
+                          ],
                         ),
                         onTap: () {
                           Navigator.push(

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/expense.dart';
+import '../models/monthly_total.dart';
 import '../services/database_service.dart';
 
 class ExpenseProvider extends ChangeNotifier {
@@ -16,6 +17,9 @@ class ExpenseProvider extends ChangeNotifier {
 
   Map<String, double> _expensesByCategory = {};
   Map<String, double> get expensesByCategory => _expensesByCategory;
+
+  List<MonthlyTotal> _monthlyTotals = const [];
+  List<MonthlyTotal> get monthlyTotals => _monthlyTotals;
 
   ExpenseProvider() {
     loadExpenses();
@@ -37,9 +41,14 @@ class ExpenseProvider extends ChangeNotifier {
             _selectedMonth.year,
             _selectedMonth.month,
           );
+
+      _monthlyTotals = await _databaseService.getMonthlyTotals(
+        endMonth: _selectedMonth,
+        lastMonths: 6,
+      );
       notifyListeners();
     } catch (e) {
-      print('Error loading expenses: $e');
+      debugPrint('Error loading expenses: $e');
     }
   }
 
@@ -49,7 +58,7 @@ class ExpenseProvider extends ChangeNotifier {
       await _databaseService.addExpense(expense);
       await loadExpenses();
     } catch (e) {
-      print('Error adding expense: $e');
+      debugPrint('Error adding expense: $e');
     }
   }
 
@@ -59,7 +68,7 @@ class ExpenseProvider extends ChangeNotifier {
       await _databaseService.updateExpense(expense);
       await loadExpenses();
     } catch (e) {
-      print('Error updating expense: $e');
+      debugPrint('Error updating expense: $e');
     }
   }
 
@@ -69,7 +78,7 @@ class ExpenseProvider extends ChangeNotifier {
       await _databaseService.deleteExpense(id);
       await loadExpenses();
     } catch (e) {
-      print('Error deleting expense: $e');
+      debugPrint('Error deleting expense: $e');
     }
   }
 
