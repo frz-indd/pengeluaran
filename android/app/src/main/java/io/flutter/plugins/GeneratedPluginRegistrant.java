@@ -16,6 +16,21 @@ public final class GeneratedPluginRegistrant {
   private static final String TAG = "GeneratedPluginRegistrant";
   public static void registerWith(@NonNull FlutterEngine flutterEngine) {
     try {
+      flutterEngine.getPlugins().add(new dev.fluttercommunity.plus.androidalarmmanager.AndroidAlarmManagerPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin android_alarm_manager_plus, dev.fluttercommunity.plus.androidalarmmanager.AndroidAlarmManagerPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin flutter_local_notifications, com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new net.jonhanson.flutter_native_splash.FlutterNativeSplashPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin flutter_native_splash, net.jonhanson.flutter_native_splash.FlutterNativeSplashPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin flutter_plugin_android_lifecycle, io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin", e);
@@ -24,6 +39,21 @@ public final class GeneratedPluginRegistrant {
       flutterEngine.getPlugins().add(new io.flutter.plugins.imagepicker.ImagePickerPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin image_picker_android, io.flutter.plugins.imagepicker.ImagePickerPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.github.dart_lang.jni.JniPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin jni, com.github.dart_lang.jni.JniPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.github.dart_lang.jni_flutter.JniFlutterPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin jni_flutter, com.github.dart_lang.jni_flutter.JniFlutterPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.crazecoder.openfile.OpenFilePlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin open_file_android, com.crazecoder.openfile.OpenFilePlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin());
