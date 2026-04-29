@@ -9,6 +9,7 @@ import '../models/category.dart';
 import '../providers/expense_provider.dart';
 import '../services/receipt_image_service.dart';
 import '../widgets/image_preview_dialog.dart';
+import '../widgets/category_icon.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final Expense? expenseToEdit;
@@ -272,7 +273,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               _selectedCategory = category.name;
                             });
                           },
-                          avatar: Text(category.emoji),
+                          avatar: CategoryIcon(category: category, size: 18),
                           label: Text(category.name),
                           backgroundColor: category.color.withAlpha(51),
                           selectedColor: category.color,

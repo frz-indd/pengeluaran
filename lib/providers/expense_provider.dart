@@ -104,4 +104,23 @@ class ExpenseProvider extends ChangeNotifier {
   Future<List<Expense>> getAllExpenses() async {
     return _databaseService.getAllExpenses();
   }
+
+  // Get today's expenses
+  List<Expense> getTodayExpenses() {
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    return _expenses.where((expense) {
+      final expenseDate = DateTime(
+        expense.date.year,
+        expense.date.month,
+        expense.date.day,
+      );
+      return expenseDate == todayStart;
+    }).toList()..sort((a, b) => b.date.compareTo(a.date));
+  }
+
+  // Get today's total expenses
+  double getTodayTotal() {
+    return getTodayExpenses().fold(0.0, (sum, expense) => sum + expense.amount);
+  }
 }

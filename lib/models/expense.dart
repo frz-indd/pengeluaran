@@ -1,7 +1,7 @@
 class Expense {
   final int? id;
   final String title;
-  final double amount;
+  late final double amount;
   final String category;
   final DateTime date;
   final String? description;
@@ -51,7 +51,7 @@ class Expense {
     String? category,
     DateTime? date,
     String? description,
-    String? imagePath, // 🔥 TAMBAHAN
+    String? imagePath,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -60,7 +60,7 @@ class Expense {
       category: category ?? this.category,
       date: date ?? this.date,
       description: description ?? this.description,
-      imagePath: imagePath ?? this.imagePath, // 🔥 TAMBAHAN
+      imagePath: imagePath ?? this.imagePath, 
     );
   }
 }

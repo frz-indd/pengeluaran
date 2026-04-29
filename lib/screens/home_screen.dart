@@ -10,6 +10,9 @@ import 'add_expense_screen.dart';
 import 'expense_list_screen.dart';
 import '../widgets/image_preview_dialog.dart';
 import '../widgets/reminder_widget.dart';
+import '../widgets/category_icon.dart';
+import '../widgets/export_app_selection_dialog.dart';
+import '../services/excel_export_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +27,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Outcome'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('My Outcome'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download),
+            tooltip: 'Export ke Excel',
+            onPressed: () => _exportToExcel(context),
+          ),
+        ],
+      ),
       body: Consumer<ExpenseProvider>(
         builder: (context, provider, _) {
           return _selectedIndex == 0
@@ -201,10 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              category.emoji,
-                              style: const TextStyle(fontSize: 24),
-                            ),
+                            CategoryIcon(category: category, size: 24),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -286,7 +296,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               expense.category,
                             );
                             return ListTile(
-                              leading: Text(category.emoji),
+                              leading: CategoryIcon(
+                                category: category,
+                                size: 20,
+                              ),
                               title: Text(expense.title),
                               subtitle: Text(
                                 DateFormat(
@@ -454,5 +467,70 @@ class _HomeScreenState extends State<HomeScreen> {
         }),
       ),
     );
+  }
+
+  Future<void> _exportToExcel(BuildContext context) async {
+    final provider = context.read<ExpenseProvider>();
+    final dateFormat = DateFormat('MMMM yyyy', 'id_ID');
+    final monthYear = dateFormat.format(provider.selectedMonth);
+
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Export to Excel
+      final filePath = await ExcelExportService.exportExpensesToExcel(
+        provider.expenses,
+        monthYear: monthYear,
+      );
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      if (filePath != null) {
+        // Show app selection dialog
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => ExportAppSelectionDialog(
+              onAppSelected: (appChoice) async {
+                await ExcelExportService.openFile(filePath, appChoice);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('File disimpan ke: $filePath'),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              },
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Gagal membuat file Excel'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }

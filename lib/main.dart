@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/expense_provider.dart';
@@ -8,11 +9,20 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize notification service
-  await NotificationService().initialize();
-  await NotificationService().setDailyReminderAt8AM();
-
+  final notificationService = NotificationService();
   runApp(const MyApp());
+
+  Future<void>(() async {
+    try {
+      await notificationService.initialize();
+      await notificationService.setDailyReminderAt8AM();
+      await notificationService.scheduleBreakfastReminderOnceAt630AM();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Notification scheduling failed: $e');
+      }
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -47,7 +57,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         home: const HomeScreen(),
       ),
     );

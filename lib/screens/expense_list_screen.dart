@@ -7,6 +7,7 @@ import '../models/expense.dart';
 import '../providers/expense_provider.dart';
 import 'add_expense_screen.dart';
 import '../widgets/image_preview_dialog.dart';
+import '../widgets/category_icon.dart';
 
 class ExpenseListScreen extends StatefulWidget {
   final ExpenseProvider provider;
@@ -61,10 +62,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                 ...categories.map((category) {
                   return FilterChip(
                     selected: _filterCategory == category.name,
-                    avatar: Text(
-                      category.emoji,
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    avatar: CategoryIcon(category: category, size: 16),
                     label: Text(category.name),
                     backgroundColor: category.color.withAlpha(51),
                     onSelected: (_) {
@@ -117,10 +115,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: Center(
-                            child: Text(
-                              category.emoji,
-                              style: const TextStyle(fontSize: 20),
-                            ),
+                            child: CategoryIcon(category: category, size: 20),
                           ),
                         ),
                         title: Text(
